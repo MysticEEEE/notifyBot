@@ -1,0 +1,13 @@
+services:
+  astrbot:
+    image: soulter/astrbot:latest
+    container_name: astrbot
+    restart: always
+    volumes:
+      - /mnt/f/Docker/bot/data:/AstrBot/data
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

@@ -1,0 +1,62 @@
+name: memory
+
+services:
+  memos-neo4j:
+    image: neo4j:5.26.6
+    container_name: memos-neo4j
+    restart: always
+    environment:
+      NEO4J_ACCEPT_LICENSE_AGREEMENT: "yes"
+      NEO4J_AUTH: "neo4j/d5bdace77e19e1dd5fe8f5ec23684084"
+    healthcheck:
+      test: wget -q http://localhost:7474 -O /dev/null || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - /mnt/f/Docker/memory/neo4j/data:/data
+      - /mnt/f/Docker/memory/neo4j/logs:/logs
+    networks:
+      - proxy
+
+  memos-qdrant:
+    image: qdrant/qdrant:v1.15.3
+    container_name: memos-qdrant
+    restart: always
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__SERVICE__HTTP_PORT: 6333
+    volumes:
+      - /mnt/f/Docker/memory/qdrant:/qdrant/storage
+    networks:
+      - proxy
+
+  memos-api:
+    container_name: memos-api
+    build:
+      context: /mnt/f/Docker/memory/MemOS
+      dockerfile: docker/Dockerfile
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app/src
+      - HF_ENDPOINT=https://hf-mirror.com
+      - QDRANT_HOST=memos-qdrant
+      - QDRANT_PORT=6333
+      - QDRANT_URL=
+      - NEO4J_URI=bolt://memos-neo4j:7687
+    volumes:
+      - /mnt/f/Docker/memory/data:/app/data
+    depends_on:
+      memos-neo4j:
+        condition: service_healthy
+      memos-qdrant:
+        condition: service_started
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

@@ -1,0 +1,45 @@
+auth_token: "ca85efec9a3d016254e58fdc16eeb2a1"
+
+commands:
+  ping:
+    description: "Health check"
+    type: internal
+
+  restart-ollama:
+    description: "Restart Ollama container"
+    type: docker
+    action: restart
+    container: ollama
+
+  restart-anythingllm:
+    description: "Restart AnythingLLM container"
+    type: docker
+    action: restart
+    container: anythingllm
+
+  restart-astrbot:
+    description: "Restart AstrBot container"
+    type: docker
+    action: restart
+    container: astrbot
+
+  restart-openclaw:
+    description: "Restart OpenClaw container"
+    type: docker
+    action: restart
+    container: openclaw
+
+  restart-parsec:
+    description: "Restart Parsec remote desktop"
+    type: host
+    command: 'powershell.exe -Command "Restart-Service Parsec"'
+
+  restart-emulator:
+    description: "Restart LDPlayer emulator"
+    type: host
+    command: 'powershell.exe -Command "Stop-Process -Name LDPlayer -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Start-Process \"C:\\LDPlayer\\LDPlayer9\\dnplayer.exe\""'
+
+  system-status:
+    description: "Get system resource usage"
+    type: host
+    command: 'echo "=== CPU ===" && top -bn1 | head -5 && echo "=== Memory ===" && free -h && echo "=== Disk ===" && df -h /mnt/f'
