@@ -64,9 +64,9 @@ docker exec openclaw openclaw models status
 
 ### 1C：访问 OpenClaw Dashboard（Web UI）
 
-gateway 已改为 `bind: lan`，nginx 反代已配好。
+Dashboard 需要 secure context（HTTPS 或 localhost），已配置端口直接映射。
 
-**直接浏览器打开**：`http://openclaw.home:18080`
+**浏览器打开**：`http://localhost:18789`
 
 > Gateway Token（如需认证）：`2a89be0c4330a11c276a16bc1cd4cac40d59c57aebc1a1e1`
 
@@ -279,7 +279,7 @@ AstrBot 支持的微信相关适配器：
 
 | 服务 | 容器 | 状态 | 备注 |
 |------|------|------|------|
-| OpenClaw | openclaw | ✅ Running (healthy) | 缺 LLM 配置，Dashboard 已可通过 `openclaw.home:18080` 访问 |
+| OpenClaw | openclaw | ✅ Running (healthy) | 缺 LLM 配置，Dashboard：`http://localhost:18789` |
 | AstrBot | astrbot | ✅ Running | 默认账密未改，LLM 未配 |
 | MemOS API | memos-api | ✅ Running | 待 OpenClaw 集成 |
 | Neo4j | memos-neo4j | ✅ Running (healthy) | — |
