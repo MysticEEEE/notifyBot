@@ -10,3 +10,7 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Scripts runtime tokens / secrets
+scripts/*.json
+.ms-todo-tokens.json

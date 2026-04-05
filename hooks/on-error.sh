@@ -1,17 +1,16 @@
 #!/bin/bash
-# Hook: Claude Code task encountered an error
+# Hook: PostToolUseFailure — tool execution failed
+# Receives JSON on stdin: {tool_name, tool_input, error, ...}
 
-ERROR_INFO=""
-if [ ! -t 0 ]; then
-  ERROR_INFO=$(cat)
-fi
-
-MESSAGE="Claude Code 任务报错"
-if [ -n "$ERROR_INFO" ]; then
-  # Truncate to 500 chars to avoid oversized payloads
-  ERROR_INFO=$(echo "$ERROR_INFO" | head -c 500)
-  MESSAGE="Claude Code 报错: ${ERROR_INFO}"
-fi
+INPUT=$(cat)
+INFO=$(echo "$INPUT" | python3 -c '
+import sys,json
+d=json.load(sys.stdin)
+tool=d.get("tool_name","?")
+err=str(d.get("error",d.get("tool_output","")))[:200]
+print(f"{tool}: {err}")
+' 2>/dev/null || echo "未知错误")
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-exec "$SCRIPT_DIR/notify.sh" "error" "$MESSAGE" "high"
+"$SCRIPT_DIR/notify.sh" "error" "工具报错 ${INFO}" "high"
+exit 0

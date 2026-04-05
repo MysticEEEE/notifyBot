@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude Code notification hook - sends events to AstrBot
+# Claude Code notification hook - sends events via OpenClaw WeChat channel
 # Usage: notify.sh <event_type> <message> [priority]
 # Exit 0 always — never block Claude Code
 
@@ -8,34 +8,32 @@ set -euo pipefail
 EVENT_TYPE="${1:-unknown}"
 MESSAGE="${2:-No message}"
 PRIORITY="${3:-low}"
-TIMEOUT=5
 
-ASTRBOT_URL="http://127.0.0.1:18080"
-ASTRBOT_HOST="astrbot-api.home"
+OPENCLAW_CONTAINER="openclaw"
+WEIXIN_CHANNEL="openclaw-weixin"
+WEIXIN_TARGET="o9cq802hp0ypsg3rherwni-puwvy@im.wechat"
 
-TIMESTAMP=$(date -Iseconds)
-HOSTNAME=$(hostname)
-CWD=$(pwd)
+TIMESTAMP=$(date '+%H:%M:%S')
+CWD=$(basename "$(pwd)")
 
-PAYLOAD=$(cat <<EOF
-{
-  "event": "claude_code",
-  "type": "${EVENT_TYPE}",
-  "message": $(printf '%s' "$MESSAGE" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))'),
-  "priority": "${PRIORITY}",
-  "timestamp": "${TIMESTAMP}",
-  "hostname": "${HOSTNAME}",
-  "cwd": "${CWD}"
-}
-EOF
-)
+# Get session name from CLAUDE_SESSION_NAME env or fallback
+SESSION_NAME="${CLAUDE_SESSION_NAME:-${CWD}}"
 
-# Send notification, fail silently
-no_proxy=127.0.0.1 curl -s -m "$TIMEOUT" \
-  -X POST \
-  -H "Host: ${ASTRBOT_HOST}" \
-  -H "Content-Type: application/json" \
-  -d "$PAYLOAD" \
-  "${ASTRBOT_URL}/webhook/claude-code" >/dev/null 2>&1 || true
+# Format notification text
+case "$EVENT_TYPE" in
+  approval_needed) ICON="🔔" ;;
+  task_complete)   ICON="✅" ;;
+  timeout)         ICON="⏰" ;;
+  *)               ICON="📋" ;;
+esac
+
+NOTIFY_TEXT="${ICON} [Claude Code] ${MESSAGE}
+📂 ${SESSION_NAME} | ⏱ ${TIMESTAMP}"
+
+# Send via OpenClaw message send
+docker exec "$OPENCLAW_CONTAINER" openclaw message send \
+  --channel "$WEIXIN_CHANNEL" \
+  --target "$WEIXIN_TARGET" \
+  -m "$NOTIFY_TEXT" >/dev/null 2>&1 || true
 
 exit 0

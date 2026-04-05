@@ -1,7 +1,10 @@
 #!/bin/bash
-# Hook: Claude Code task completed
+# Hook: Stop — Claude finished responding
+# Receives JSON on stdin: {session_id, cwd, ...}
 
-TASK_INFO="${1:-Task completed}"
+INPUT=$(cat)
+DIR=$(echo "$INPUT" | python3 -c 'import sys,json,os; print(os.path.basename(json.load(sys.stdin).get("cwd","?")))' 2>/dev/null || echo "?")
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-exec "$SCRIPT_DIR/notify.sh" "task_complete" "$TASK_INFO" "low"
+"$SCRIPT_DIR/notify.sh" "task_complete" "回复完成 (${DIR})" "low"
+exit 0

@@ -23,18 +23,13 @@
 ┌──────────────────────────────────────────────────────────────┐
 │                        用户触达层                              │
 ├──────────┬──────────┬──────────┬──────────┬──────────────────┤
-│ 微信小号  │  WebUI   │ Obsidian │  飞书(预留)│   Claude Code   │
-│ (主入口)  │          │ (多端同步) │          │   (Hooks)       │
+│  微信     │  QQ Bot  │ Obsidian │  飞书(预留)│   Claude Code   │
+│ (ClawBot) │          │ (多端同步) │          │   (Hooks)       │
 └────┬─────┴────┬─────┴──────────┴──────────┴───────┬─────────┘
      │          │                                    │
      ▼          ▼                                    │
-  AstrBot ←──────────────────────────────────────────┘
-  (轻量网关：Claude Code 通知 + OpenClaw 存活监控)
-     │
-     │  ← 日常交互直连 →
-     │
-     ▼
-  OpenClaw（核心执行引擎，沙箱模式，不暴露外网）
+  OpenClaw（核心执行引擎，直连微信/QQ，沙箱模式）←────┘
+     │         Hooks 通过 openclaw message send 推送微信通知
      │
      ├─ MemOS ────────── 个人记忆（自动提取、知识图谱、版本追溯）
      ├─ AnythingLLM ──── 长文档 RAG（论文、资料语义检索）
@@ -48,24 +43,27 @@
   Nginx (:18080) → 各服务容器
   Cloudflare Tunnel → Nginx → 外网访问 (SSL by Cloudflare)
   CouchDB → Obsidian LiveSync 跨设备同步
+
+备用通道（保留但非主链路）：
+  AstrBot → 微信/QQ（Gewechat 协议，已停止维护）
 ```
 
 ### 数据流向
 
 ```
-日常对话（微信发送）
-  → OpenClaw（意图识别 + 执行）
+日常对话（微信/QQ 发送）
+  → OpenClaw 直接接收（WeChat ClawBot / QQ Bot 插件）
     ├→ 自然语言自动提取 → MemOS（事实/关系/偏好）
     ├→ "记笔记" → Obsidian vault 00-Inbox/
     ├→ "加待办" → MS To Do + Obsidian Tasks 双写
-    └→ 普通对话 → Ollama 回复
+    └→ 普通对话 → Codex GPT-5.4 / Ollama 回复
 
 深度研究
   → Open Notebook（上传资料 → AI 分析）
   → AnythingLLM（RAG 知识库查询）
 
 Claude Code 事件
-  → Hooks POST → AstrBot → 微信推送通知
+  → Hooks → docker exec openclaw message send → 微信推送通知
 ```
 
 ---
