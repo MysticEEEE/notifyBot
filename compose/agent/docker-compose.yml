@@ -9,6 +9,7 @@ services:
       - openclaw-extensions:/home/node/.openclaw/extensions
       - /mnt/e/Obsidian_Repository/Gyw_Obsidian_Repository:/home/node/obsidian-vault
       - /mnt/f/Obsidian/vault:/home/node/obsidian-vault-template
+      - /mnt/f/Docker/openclaw/ms-todo-config:/home/node/.config/microsoft-todo
     environment:
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_TOKEN}
     env_file:
