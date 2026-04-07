@@ -14,3 +14,4 @@ Thumbs.db
 # Scripts runtime tokens / secrets
 scripts/*.json
 .ms-todo-tokens.json
+scripts/__pycache__/
